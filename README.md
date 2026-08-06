@@ -64,6 +64,8 @@ Targeted an account with Kerberos pre-authentication disabled — this allows a 
 ![AS-REP roast — extract ticket](07-asrep-extract.png)
 ![AS-REP roast — crack](08-asrep-crack.png)
 
+> **Note — the recovered password is intentionally the same as the Kerberoast target.** Both deliberately-vulnerable accounts (`svc_sql` and `asrep`) were assigned the weak password `Password1` to demonstrate password reuse. Because NTLM is unsalted, the two accounts share the *identical* NT hash (`64f12cddaa88057e06a81b54e73b949b`) — visible in the DCSync dump below. This is a deliberate teaching point, not a duplicated result.
+
 ### 5. Privilege Abuse & Lateral Movement
 
 The cracked `svc_sql` account was a member of **Domain Admins** — a common real-world misconfiguration of over-privileged service accounts. Those credentials were used to gain remote code execution on the domain controller.
