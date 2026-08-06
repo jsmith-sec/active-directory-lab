@@ -151,6 +151,10 @@ Ingested the domain into BloodHound Community Edition to visualize the privilege
 | Kerberos pre-authentication disabled | Enables credential-free AS-REP Roasting | Require pre-authentication on all accounts |
 | SPNs on weak-password accounts | Enables Kerberoasting | Strong passwords on all SPN-bearing accounts; monitor for anomalous TGS requests |
 
+## Full Report
+
+See [AD-Lab-Report.pdf](AD-Lab-Report.pdf) for the complete write-up — executive summary, full attack narrative with commands and evidence, findings with severity and remediation, MITRE ATT&CK mapping, and detection guidance.
+
 ## Using Claude as a Tool
 
 This lab was built with AI assistance from [Claude](https://claude.ai) (Anthropic), used as a hands-on technical collaborator throughout. I directed the workflow and made every operational decision; Claude accelerated the setup and deepened my understanding of each technique. Specifically, Claude was used to:
