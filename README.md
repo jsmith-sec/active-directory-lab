@@ -40,11 +40,11 @@ A hands-on offensive Active Directory lab that walks a full attack chain end to 
 
 Confirmed reachability to the domain controller across the bridged network, then scanned for the hallmark Active Directory service ports — Kerberos (88), RPC (135), LDAP (389/636), and SMB (445) — all of which identify the host as a domain controller.
 
-<img src="01-connectivity-check.png" width="600" alt="Connectivity check">
+<img src="images/01-connectivity-check.png" width="600" alt="Connectivity check">
 
 *The attacker box reaches the domain controller — three ICMP replies, with TTL 128 confirming a Windows host.*
 
-<img src="02-port-scan.png" width="600" alt="Port scan — AD services exposed">
+<img src="images/02-port-scan.png" width="600" alt="Port scan — AD services exposed">
 
 *An `nmap -Pn` scan shows Kerberos (88), RPC (135), LDAP/LDAPS (389/636), and SMB (445) all open — the signature of a domain controller.*
 
@@ -52,7 +52,7 @@ Confirmed reachability to the domain controller across the bridged network, then
 
 The target domain was populated with standard and deliberately vulnerable accounts to create realistic attack paths.
 
-<img src="03-lab-accounts.png" width="600" alt="Lab accounts created on the DC">
+<img src="images/03-lab-accounts.png" width="600" alt="Lab accounts created on the DC">
 
 *Creating the domain's standard and intentionally-vulnerable accounts on the DC via PowerShell.*
 
@@ -60,11 +60,11 @@ The target domain was populated with standard and deliberately vulnerable accoun
 
 As an ordinary domain user, requested the Kerberos service ticket for the `svc_sql` account (which exposes a Service Principal Name), then cracked the ticket offline to recover its plaintext password.
 
-<img src="04-kerberoast-extract.png" width="600" alt="Kerberoast — extract svc_sql ticket">
+<img src="images/04-kerberoast-extract.png" width="600" alt="Kerberoast — extract svc_sql ticket">
 
 *`GetUserSPNs.py` requests the `svc_sql` service ticket, exposing its `$krb5tgs$` hash.*
 
-<img src="05-kerberoast-crack.png" width="600" alt="Kerberoast — crack svc_sql">
+<img src="images/05-kerberoast-crack.png" width="600" alt="Kerberoast — crack svc_sql">
 
 *hashcat cracks the ticket offline — the `svc_sql` password is recovered as `Password1`.*
 
@@ -72,15 +72,15 @@ As an ordinary domain user, requested the Kerberos service ticket for the `svc_s
 
 Targeted an account with Kerberos pre-authentication disabled — this allows a hash to be requested with **no credentials at all**, only a valid username — then cracked it offline.
 
-<img src="06-asrep-prepped.png" width="600" alt="AS-REP target prepared (pre-auth disabled)">
+<img src="images/06-asrep-prepped.png" width="600" alt="AS-REP target prepared (pre-auth disabled)">
 
 *The `asrep` account confirmed with Kerberos pre-authentication disabled (`DoesNotRequirePreAuth = True`).*
 
-<img src="07-asrep-extract.png" width="600" alt="AS-REP roast — extract ticket">
+<img src="images/07-asrep-extract.png" width="600" alt="AS-REP roast — extract ticket">
 
 *`GetNPUsers.py` retrieves the `asrep` AS-REP hash — no target credentials required, only a username.*
 
-<img src="08-asrep-crack.png" width="600" alt="AS-REP roast — crack">
+<img src="images/08-asrep-crack.png" width="600" alt="AS-REP roast — crack">
 
 *hashcat cracks the AS-REP hash offline — password recovered as `Password1`.*
 
@@ -92,11 +92,11 @@ The cracked `svc_sql` account was a member of **Domain Admins** — a common rea
 
 > Note: both `psexec` and the "fileless" `wmiexec` techniques were initially caught by Microsoft Defender on the DC — a useful blue-team observation. Defender was then disabled on the lab DC to study the attack mechanics.
 
-<img src="09-svcsql-domain-admin.png" width="600" alt="Service account added to Domain Admins">
+<img src="images/09-svcsql-domain-admin.png" width="600" alt="Service account added to Domain Admins">
 
 *`svc_sql` confirmed as a member of Domain Admins — the over-privileged service account misconfiguration.*
 
-<img src="10-wmiexec-shell.png" width="600" alt="Remote shell on DC via wmiexec">
+<img src="images/10-wmiexec-shell.png" width="600" alt="Remote shell on DC via wmiexec">
 
 *`wmiexec.py` yields a remote shell on DC01 as `adlab\svc_sql`.*
 
@@ -104,7 +104,7 @@ The cracked `svc_sql` account was a member of **Domain Admins** — a common rea
 
 With Domain Admin-level access, performed a DCSync attack to replicate the domain's password database (NTDS.dit) directly from the DC — dumping every account's NTLM hash, including `krbtgt` (the key to forging Golden Tickets) and the built-in Administrator.
 
-<img src="11-dcsync-dump.png" width="600" alt="DCSync — full domain hash dump">
+<img src="images/11-dcsync-dump.png" width="600" alt="DCSync — full domain hash dump">
 
 *`secretsdump.py` performs a DCSync, replicating every account's NTLM hash from the DC — including `krbtgt` and the built-in Administrator.*
 
@@ -112,7 +112,7 @@ With Domain Admin-level access, performed a DCSync attack to replicate the domai
 
 Authenticated as the domain Administrator using only the stolen NTLM hash — no password, no cracking — proving that a captured hash alone is enough to fully own the domain.
 
-<img src="12-pass-the-hash.png" width="600" alt="Pass-the-Hash as Administrator">
+<img src="images/12-pass-the-hash.png" width="600" alt="Pass-the-Hash as Administrator">
 
 *`wmiexec.py -hashes` authenticates as `adlab\administrator` using only the stolen NTLM hash — no password, no cracking.*
 
@@ -120,15 +120,15 @@ Authenticated as the domain Administrator using only the stolen NTLM hash — no
 
 Ingested the domain into BloodHound Community Edition to visualize the privilege relationships that made the compromise possible — the direct path from the service account to Domain Admins, every account holding Domain Admin rights, and every principal capable of the DCSync attack.
 
-<img src="13-bloodhound-attack-path.png" width="650" alt="BloodHound — attack path svc_sql to Domain Admins">
+<img src="images/13-bloodhound-attack-path.png" width="650" alt="BloodHound — attack path svc_sql to Domain Admins">
 
 *BloodHound Pathfinding renders the direct edge: `SVC_SQL` --MemberOf--> `DOMAIN ADMINS`.*
 
-<img src="14-bloodhound-domain-admins.png" width="650" alt="BloodHound — all Domain Admins">
+<img src="images/14-bloodhound-domain-admins.png" width="650" alt="BloodHound — all Domain Admins">
 
 *All three accounts holding Domain Admin rights — including the service account that shouldn't.*
 
-<img src="15-bloodhound-dcsync.png" width="650" alt="BloodHound — principals with DCSync privileges">
+<img src="images/15-bloodhound-dcsync.png" width="650" alt="BloodHound — principals with DCSync privileges">
 
 *Every principal able to perform DCSync against the domain — the privilege abused in step 6.*
 
@@ -150,6 +150,20 @@ Ingested the domain into BloodHound Community Edition to visualize the privilege
 | Weak / reused passwords | `svc_sql` and `asrep` shared an identical NT hash — password reuse is trivially exploitable because NTLM is unsalted | Enforce long, unique passwords; use Group Managed Service Accounts (gMSA) |
 | Kerberos pre-authentication disabled | Enables credential-free AS-REP Roasting | Require pre-authentication on all accounts |
 | SPNs on weak-password accounts | Enables Kerberoasting | Strong passwords on all SPN-bearing accounts; monitor for anomalous TGS requests |
+
+## Detection Opportunities
+
+Every technique in this chain leaves evidence in Windows Security event logs. During the lab, Microsoft Defender independently flagged both the `psexec` and `wmiexec` execution attempts before evasion — a live confirmation that these attacks are observable. A defender monitoring the domain controller could detect this chain at multiple points:
+
+| Attack | Primary detection signal |
+|---|---|
+| Kerberoasting | Event ID **4769** — a TGS service-ticket request, especially using RC4 encryption (`0x17`) against a user account with an SPN |
+| AS-REP Roasting | Event ID **4768** — an AS-REQ for an account flagged "does not require pre-authentication" |
+| Lateral movement (wmiexec) | Event ID **4624** (NTLM network logon, type 3) paired with **4688** process creation for the WMI-spawned `cmd.exe`; Defender alert on the execution attempt |
+| DCSync | Event ID **4662** — directory-replication access (`DS-Replication-Get-Changes`) requested by a principal that is not a domain controller |
+| Pass-the-Hash | Event ID **4624** (logon type 3, NTLM) and **4672** (special privileges) for the Administrator account from an unexpected source host |
+
+The single highest-value defensive control across this whole chain is protecting and monitoring Tier Zero assets — a service account should never hold Domain Admin, and DCSync-equivalent rights (`4662`) from a non-DC should always alarm.
 
 ## Full Report
 
