@@ -1,4 +1,26 @@
-# Active Directory Attack Lab — Kerberoasting to Full Domain Compromise
+<div align="center">
+
+# 🛡️ Active Directory Attack Lab
+### Kerberoasting → Full Domain Compromise
+
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=20&duration=3500&pause=800&color=2F81F7&center=true&vCenter=true&width=690&lines=Unauthenticated+Recon+to+Domain+Admin;Kerberoasting+%7C+AS-REP+%7C+DCSync+%7C+Pass-the-Hash;9-Stage+Attack+Chain+mapped+to+MITRE+ATT%26CK" alt="typing summary" />
+
+<p>
+  <img src="https://img.shields.io/badge/Type-Offensive%20%2F%20Red%20Team-0A2A66?style=for-the-badge" alt="type" />
+  <img src="https://img.shields.io/badge/Mapped%20to-MITRE%20ATT%26CK-2F81F7?style=for-the-badge" alt="mitre" />
+  <a href="AD-Lab-Report.pdf"><img src="https://img.shields.io/badge/Full%20Report-PDF-0A2A66?style=for-the-badge&logo=adobeacrobatreader&logoColor=white" alt="full report" /></a>
+</p>
+
+<p>
+  <img src="https://img.shields.io/badge/Windows%20Server%202022-0078D6?style=flat-square&logo=windows&logoColor=white" alt="windows server" />
+  <img src="https://img.shields.io/badge/Ubuntu%2026.04%20ARM64-E95420?style=flat-square&logo=ubuntu&logoColor=white" alt="ubuntu" />
+  <img src="https://img.shields.io/badge/Impacket-2F81F7?style=flat-square" alt="impacket" />
+  <img src="https://img.shields.io/badge/Hashcat-2F81F7?style=flat-square" alt="hashcat" />
+  <img src="https://img.shields.io/badge/BloodHound%20CE-2F81F7?style=flat-square" alt="bloodhound" />
+  <img src="https://img.shields.io/badge/Nmap-2F81F7?style=flat-square" alt="nmap" />
+</p>
+
+</div>
 
 A hands-on offensive Active Directory lab that walks a full attack chain end to end: from unauthenticated network recon on the LAN to Domain Administrator access on a live Windows Server domain controller. The lab is built across two machines and two CPU architectures — an ARM64 Linux attacker box on Apple Silicon and an x86 Windows Server domain controller — bridged onto the same network.
 
